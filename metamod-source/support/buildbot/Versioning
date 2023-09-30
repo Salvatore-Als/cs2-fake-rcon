@@ -1,0 +1,44 @@
+# vim: set ts=8 sts=2 sw=2 tw=99 et ft=python: 
+import os, sys
+import re
+
+builder.SetBuildFolder('/')
+
+includes = builder.AddFolder('includes')
+
+argv = [
+  sys.executable,
+  os.path.join(builder.sourcePath, 'support', 'buildbot', 'generate_headers.py'),
+  os.path.join(builder.sourcePath),
+  os.path.join(builder.buildPath, 'includes')
+]
+outputs = [
+  os.path.join(builder.buildFolder, 'includes', 'metamod_version_auto.h')
+]
+
+with open(os.path.join(builder.sourcePath, '.git', 'HEAD'), encoding='utf-8') as fp:
+  head_contents = fp.read().strip()
+  if re.search('^[a-fA-F0-9]{40}$', head_contents):
+    git_head_path = os.path.join(builder.sourcePath, '.git', 'HEAD')
+  else:
+    git_state = head_contents.split(':')[1].strip()
+    git_head_path = os.path.join(builder.sourcePath, '.git', git_state)
+    if not os.path.exists(git_head_path):
+      git_head_path = os.path.join(builder.sourcePath, '.git', 'HEAD')
+
+sources = [
+  os.path.join(builder.sourcePath, 'product.version'),
+
+  # This is a hack, but we need some way to only run this script when Git changes.
+  git_head_path,
+
+  # The script source is a dependency, of course...
+  argv[1]
+]
+output_nodes = builder.AddCommand(
+  inputs=sources,
+  argv=argv,
+  outputs=outputs
+)
+
+rvalue = output_nodes

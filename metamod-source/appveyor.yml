@@ -1,0 +1,18 @@
+version: 1.0.{build}
+image: Visual Studio 2015
+clone_folder: c:\projects\metamod-source
+clone_depth: 1
+environment:
+  SDKS: csgo,l4d2,tf2,episode1,insurgency
+install:
+# https://www.appveyor.com/docs/windows-images-software/#python
+- cmd: set PATH=C:\Python38;C:\Python38\Scripts;%PATH%
+- cmd: git pull
+- cmd: cd ..
+- ps: metamod-source/support/checkout-deps.ps1 -SDKs ($env:SDKS -split ',')
+- cmd: cd metamod-source
+build_script:
+- cmd: mkdir build
+- cmd: cd build
+- cmd: python ../configure.py --enable-optimize --sdks=%SDKS% --targets=x86,x86_64
+- cmd: ambuild

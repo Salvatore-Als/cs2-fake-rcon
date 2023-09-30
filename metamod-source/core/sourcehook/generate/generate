@@ -1,0 +1,9 @@
+#/bin/sh
+
+cd shworker
+make
+cd ..
+
+shworker/bin/shworker.bin iter sourcehook.hxx sourcehook.h $1
+
+cp *.h ..

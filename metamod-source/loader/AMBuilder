@@ -1,0 +1,29 @@
+# vim: set ts=8 sts=2 sw=2 tw=99 et ft=python: 
+import os.path
+
+def configure_library(cxx, name, linux_defines):
+  libname = name
+  binary = MMS.Library(cxx, libname)
+  binary.compiler.cxxincludes += [os.path.join(builder.sourcePath, 'core', 'sourcehook')]
+  binary.sources += [
+    'loader.cpp',
+    'gamedll.cpp',
+    'serverplugin.cpp',
+    'utility.cpp',
+  ]
+
+  if binary.compiler.target.platform == 'linux':
+    binary.compiler.defines += linux_defines
+
+  nodes = builder.Add(binary)
+  MMS.binaries += [nodes]
+
+for cxx in MMS.all_targets:
+  if cxx.target.platform == 'linux':
+    if cxx.target.arch == 'x86_64':
+      configure_library(cxx, 'libserver', ['LIB_PREFIX="lib"', 'LIB_SUFFIX=".so"'])
+    elif cxx.target.arch == 'x86':
+      configure_library(cxx, 'server_i486', ['LIB_PREFIX=""', 'LIB_SUFFIX="_i486.so"'])
+    configure_library(cxx, 'server', ['LIB_PREFIX=""', 'LIB_SUFFIX=".so"'])
+  else:
+    configure_library(cxx, 'server', [])

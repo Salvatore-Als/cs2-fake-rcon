@@ -1,0 +1,5 @@
+"Metamod Plugin"
+{
+	"alias"		"[!output PLUGIN_NAME]"
+	"file"		"addons/metamod/plugins/[!output PLUGIN_NAME]/bin/[!output PLUGIN_DLL]"
+}
