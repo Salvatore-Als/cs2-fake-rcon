@@ -39,7 +39,7 @@ bool StubPlugin::Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxlen, bo
 
 	if (g_rconPassword == nullptr)
 	{
-		META_CONPRINTF("- FAKE RCON DISABLE, please check the lengh of the password in game/bin/win64/rcon.txt \n");
+		META_CONPRINTF("- FAKE RCON DISABLE, please check the lengh of the password in game/bin/<your_os>/rcon.txt \n");
 	}
 	else
 	{
@@ -120,13 +120,13 @@ char *StubPlugin::getRconPassword()
 	myfile.getline(buffer, sizeof(buffer));
 	myfile.close();
 
-	if (std::strlen(buffer) < 4)
+	if (strlen(buffer) < 4)
 	{
 		return nullptr;
 	}
 
-	char *result = new char[std::strlen(buffer) + 1];
-	std::strcpy(result, buffer);
+	char *result = new char[strlen(buffer) + 1];
+	strcpy(result, buffer);
 
 	return result;
 }
