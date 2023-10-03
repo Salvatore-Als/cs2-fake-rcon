@@ -16,7 +16,7 @@ for sdk_name in MMSPlugin.sdks:
     binary = MMSPlugin.HL2Library(builder, cxx, MMSPlugin.plugin_name, sdk)
 
     binary.sources += [
-      'stub_mm.cpp',
+      'fakercon.cpp',
     ]
 
     if sdk_name in ['dota', 'cs2']:
@@ -25,8 +25,8 @@ for sdk_name in MMSPlugin.sdks:
       os.path.join(sdk.path, 'public', 'tier0', 'memoverride.cpp'),
     ]
 
-    #if cxx.target.arch == 'x86':
-     #binary.sources += ['sourcehook/sourcehook_hookmangen.cpp']
+    if cxx.target.arch == 'x86':
+      binary.sources += ['sourcehook/sourcehook_hookmangen.cpp']
     nodes = builder.Add(binary)
     MMSPlugin.binaries += [nodes]
     
