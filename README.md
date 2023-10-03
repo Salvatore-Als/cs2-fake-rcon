@@ -10,4 +10,5 @@ If you want you can use **-fakercon** as commandline, it will take priority over
 
 ## How to use it ?
 fake_rcon_password YOURPWD
+
 fake_rcon say hello
