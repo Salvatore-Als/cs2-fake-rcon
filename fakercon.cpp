@@ -90,6 +90,7 @@ void Command_FakeRcon(const CCommandContext &context, const CCommand &args)
 
 	if (!pData->logged)
 	{
+		g_SMAPI->ClientConPrintf(slot, "First, enter the password with the fake_rcon_password command\n");
 		return;
 	}
 
@@ -119,15 +120,18 @@ void Command_FakeRconPassword(const CCommandContext &context, const CCommand &ar
 
 	if (pData->logged)
 	{
+		g_SMAPI->ClientConPrintf(slot, "You are already using the fake_rcon command\n");
 		return;
 	}
 
 	const char *password = args[1];
 	if (strcmp(password, g_rconPassword) != 0)
 	{
+		g_SMAPI->ClientConPrintf(slot, "Bad password !\n");
 		return;
 	}
 
+	g_SMAPI->ClientConPrintf(slot, "You can now use the fake_rcon command\n");
 	pData->logged = true;
 }
 
