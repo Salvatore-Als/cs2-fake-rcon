@@ -17,6 +17,7 @@ for sdk_name in MMSPlugin.sdks:
 
     binary.sources += [
       'fakercon.cpp',
+      'filemanager.cpp'
     ]
 
     if sdk_name in ['dota', 'cs2']:

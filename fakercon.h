@@ -14,7 +14,6 @@ public:
 	void AllPluginsLoaded();
 
 	void Hook_ClientFullyConnect( CPlayerSlot nSlot );
-	char *getRconPasswordFromFile();
 
 public:
 	const char *GetAuthor();

@@ -4,6 +4,7 @@
 #include <iostream>
 #include <fstream>
 #include <fmtstr.h>
+#include "filemanager.h"
 
 using namespace std;
 
@@ -15,10 +16,12 @@ IServerGameDLL *server = NULL;
 ISource2GameClients *gameclients = NULL;
 IVEngineServer2 *engine = NULL;
 ICvar *icvar = NULL;
+CFileManager *g_fileManager = NULL;
+IFileSystem *g_fileSystem = NULL;
 
 PlayerData g_playerData[MAXPLAYERS + 1];
 
-char *g_rconPassword;
+const char *g_rconPassword;
 
 PLUGIN_EXPOSE(FakeRcon, g_FakeRcon);
 bool FakeRcon::Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxlen, bool late)
@@ -29,8 +32,11 @@ bool FakeRcon::Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxlen, bool
 	GET_V_IFACE_ANY(GetServerFactory, gameclients, ISource2GameClients, SOURCE2GAMECLIENTS_INTERFACE_VERSION);
 	GET_V_IFACE_CURRENT(GetEngineFactory, engine, IVEngineServer2, SOURCE2ENGINETOSERVER_INTERFACE_VERSION);
 	GET_V_IFACE_CURRENT(GetEngineFactory, icvar, ICvar, CVAR_INTERFACE_VERSION);
+	GET_V_IFACE_CURRENT(GetFileSystemFactory, g_fileSystem, IFileSystem, FILESYSTEM_INTERFACE_VERSION);
 
 	SH_ADD_HOOK_MEMFUNC(ISource2GameClients, ClientFullyConnect, gameclients, this, &FakeRcon::Hook_ClientFullyConnect, false);
+
+	g_fileManager = new CFileManager();
 
 	if (CommandLine()->HasParm("-fakercon"))
 	{
@@ -40,13 +46,13 @@ bool FakeRcon::Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxlen, bool
 	}
 	else
 	{
-		g_rconPassword = FakeRcon::getRconPasswordFromFile();
-		META_CONPRINTF("[FAKE RCON] Fetching RCON from rcon.text \n");
+		g_rconPassword = strdup(g_fileManager->GetRconPassword());
+		META_CONPRINTF("[FAKE RCON] Fetching RCON from %s\n", CONFIG_FILE);
 	}
 
-	if (g_rconPassword == nullptr)
+	if (!g_rconPassword || strlen(g_rconPassword) < 4)
 	{
-		META_CONPRINTF("[FAKE RCON], please check the lengh of the password in game/bin/<your_os>/rcon.txt or -fakercon command line \n");
+		META_CONPRINTF("[FAKE RCON], please check the lengh of the password in game/csgo/%s or -fakercon command line \n", CONFIG_FILE);
 	}
 	else
 	{
@@ -73,7 +79,35 @@ void FakeRcon::AllPluginsLoaded()
 void FakeRcon::Hook_ClientFullyConnect(CPlayerSlot slot)
 {
 	PlayerData *pData = &g_playerData[slot.Get()];
-	pData->logged = false;
+	pData->logged = false; // Unlog for the security, the cache will be checked after the first fake_rcon cmd typed by the client
+}
+
+CON_COMMAND_EXTERN(fake_rcon_cache_clean, Command_FakeRconCacheClean, "Clean the fake rcon cache");
+void Command_FakeRconCacheClean(const CCommandContext &context, const CCommand &args)
+{
+	CPlayerSlot slot = context.GetPlayerSlot();
+
+	if (slot.Get() < 0)
+	{
+		return;
+	}
+
+	PlayerData *pData = &g_playerData[slot.Get()];
+
+	if (!pData->logged)
+	{
+		const char *networkId = engine->GetPlayerNetworkIDString(slot.Get());
+		if (!g_fileManager->IsSteamIdCached(networkId))
+		{
+			g_SMAPI->ClientConPrintf(slot, "First, enter the password with the fake_rcon_password command\n");
+			return;
+		}
+
+		pData->logged = true;
+	}
+
+	g_fileManager->CleanCache();
+	g_SMAPI->ClientConPrintf(slot, "Cache has been cleaned\n");
 }
 
 CON_COMMAND_EXTERN(fake_rcon, Command_FakeRcon, "fake_rcon {CMD}");
@@ -90,8 +124,14 @@ void Command_FakeRcon(const CCommandContext &context, const CCommand &args)
 
 	if (!pData->logged)
 	{
-		g_SMAPI->ClientConPrintf(slot, "First, enter the password with the fake_rcon_password command\n");
-		return;
+		const char *networkId = engine->GetPlayerNetworkIDString(slot.Get());
+		if (!g_fileManager->IsSteamIdCached(networkId))
+		{
+			g_SMAPI->ClientConPrintf(slot, "First, enter the password with the fake_rcon_password command\n");
+			return;
+		}
+
+		pData->logged = true;
 	}
 
 	char *commandString = const_cast<char *>(args.GetCommandString());
@@ -124,6 +164,7 @@ void Command_FakeRconPassword(const CCommandContext &context, const CCommand &ar
 		return;
 	}
 
+	
 	const char *password = args[1];
 	if (strcmp(password, g_rconPassword) != 0)
 	{
@@ -133,30 +174,9 @@ void Command_FakeRconPassword(const CCommandContext &context, const CCommand &ar
 
 	g_SMAPI->ClientConPrintf(slot, "You can now use the fake_rcon command\n");
 	pData->logged = true;
-}
 
-char *FakeRcon::getRconPasswordFromFile()
-{
-	std::ifstream myfile("rcon.txt");
-
-	if (!myfile.is_open())
-	{
-		return nullptr;
-	}
-
-	char buffer[256];
-	myfile.getline(buffer, sizeof(buffer));
-	myfile.close();
-
-	if (strlen(buffer) < 4)
-	{
-		return nullptr;
-	}
-
-	char *result = new char[strlen(buffer) + 1];
-	strcpy(result, buffer);
-
-	return result;
+	const char *networkId = engine->GetPlayerNetworkIDString(slot.Get());
+	g_fileManager->AddSteamIdToCache(networkId);
 }
 
 bool FakeRcon::Pause(char *error, size_t maxlen)
@@ -176,7 +196,7 @@ const char *FakeRcon::GetLicense()
 
 const char *FakeRcon::GetVersion()
 {
-	return "1.1.2";
+	return "1.2";
 }
 
 const char *FakeRcon::GetDate()
