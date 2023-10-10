@@ -1,14 +1,22 @@
 #include <stdio.h>
 #include "fakercon.h"
 #include <string>
-#include <iostream>
-#include <fstream>
-#include <fmtstr.h>
 #include "filemanager.h"
+#include "abstract.h"
 
-using namespace std;
+void Debug(const char *msg, ...)
+{
+	va_list args;
+	va_start(args, msg);
 
-SH_DECL_HOOK2_void(ISource2GameClients, ClientCommand, SH_NOATTRIB, 0, CPlayerSlot, const CCommand &);
+	char buf[1024] = {};
+	V_vsnprintf(buf, sizeof(buf) - 1, msg, args);
+
+	META_CONPRINTF("%s\n", buf);
+
+	va_end(args);
+}
+
 SH_DECL_HOOK1_void(ISource2GameClients, ClientFullyConnect, SH_NOATTRIB, false, CPlayerSlot);
 
 FakeRcon g_FakeRcon;
@@ -21,7 +29,7 @@ IFileSystem *g_fileSystem = NULL;
 
 PlayerData g_playerData[MAXPLAYERS + 1];
 
-const char *g_rconPassword;
+const char *g_szRconPassword;
 
 PLUGIN_EXPOSE(FakeRcon, g_FakeRcon);
 bool FakeRcon::Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxlen, bool late)
@@ -41,22 +49,23 @@ bool FakeRcon::Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxlen, bool
 	if (CommandLine()->HasParm("-fakercon"))
 	{
 		const char *rconPasswordConst = CommandLine()->ParmValue("-fakercon");
-		g_rconPassword = strdup(rconPasswordConst);
-		META_CONPRINTF("[FAKE RCON] Fetching RCON from -fakercon command line \n");
+		g_szRconPassword = strdup(rconPasswordConst);
+
+		Debug("[FAKE RCON] Fetching RCON from -fakercon command line");
 	}
 	else
 	{
-		g_rconPassword = strdup(g_fileManager->GetRconPassword());
-		META_CONPRINTF("[FAKE RCON] Fetching RCON from %s\n", CONFIG_FILE);
+		g_szRconPassword = strdup(g_fileManager->GetRconPassword());
+		Debug("[FAKE RCON] Fetching RCON from %s", CONFIG_FILE);
 	}
 
-	if (!g_rconPassword || strlen(g_rconPassword) < 4)
+	if (!g_szRconPassword || strlen(g_szRconPassword) < 4)
 	{
-		META_CONPRINTF("[FAKE RCON], please check the lengh of the password in game/csgo/%s or -fakercon command line \n", CONFIG_FILE);
+		Debug("[FAKE RCON], please check the lengh of the password in game/csgo/%s or -fakercon command line", CONFIG_FILE);
 	}
 	else
 	{
-		META_CONPRINTF("[FAKE RCON] Fake rcon is %s\n", g_rconPassword);
+		Debug("[FAKE RCON] Fake rcon is", g_szRconPassword);
 	}
 
 	g_pCVar = icvar;
@@ -68,6 +77,8 @@ bool FakeRcon::Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxlen, bool
 bool FakeRcon::Unload(char *error, size_t maxlen)
 {
 	SH_REMOVE_HOOK_MEMFUNC(ISource2GameClients, ClientFullyConnect, gameclients, this, &FakeRcon::Hook_ClientFullyConnect, false);
+
+	delete g_fileManager;
 
 	return true;
 }
@@ -115,7 +126,7 @@ void Command_FakeRcon(const CCommandContext &context, const CCommand &args)
 {
 	CPlayerSlot slot = context.GetPlayerSlot();
 
-	if (g_rconPassword == nullptr || slot.Get() < 0)
+	if (g_szRconPassword == nullptr || slot.Get() < 0)
 	{
 		return;
 	}
@@ -151,7 +162,7 @@ void Command_FakeRconPassword(const CCommandContext &context, const CCommand &ar
 {
 	CPlayerSlot slot = context.GetPlayerSlot();
 
-	if (g_rconPassword == nullptr || slot.Get() < 0)
+	if (g_szRconPassword == nullptr || slot.Get() < 0)
 	{
 		return;
 	}
@@ -164,9 +175,8 @@ void Command_FakeRconPassword(const CCommandContext &context, const CCommand &ar
 		return;
 	}
 
-	
 	const char *password = args[1];
-	if (strcmp(password, g_rconPassword) != 0)
+	if (strcmp(password, g_szRconPassword) != 0)
 	{
 		g_SMAPI->ClientConPrintf(slot, "Bad password !\n");
 		return;
@@ -196,7 +206,7 @@ const char *FakeRcon::GetLicense()
 
 const char *FakeRcon::GetVersion()
 {
-	return "1.2";
+	return "1.2.1";
 }
 
 const char *FakeRcon::GetDate()
@@ -226,5 +236,5 @@ const char *FakeRcon::GetName()
 
 const char *FakeRcon::GetURL()
 {
-	return "https://kriax.ovh/";
+	return "https://kriax.ovh";
 }

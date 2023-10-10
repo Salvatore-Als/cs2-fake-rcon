@@ -10,4 +10,4 @@ cd build
 python ../configure.py --plugin-name=test --sdks cs2 --targets=x86_64 --plugin-name=fake_rcon --plugin-alias=fake_rcon
 
 ambuild
-PAUSE
+exit

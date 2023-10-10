@@ -1,8 +1,7 @@
-#pragma once
-
 #include <string>
 #include "KeyValues.h"
 #include <ctime>
+#include "abstract.h"
 
 #define CACHE_FILE "addons/configs/fake_rcon/cache.ini"
 #define CONFIG_FILE "addons/configs/fake_rcon/config.ini"
@@ -27,9 +26,6 @@ public:
 private:
     int g_cacheTime;
     const char *g_szRconPassword;
-
-    void SetCacheTime(int cacheTime) { g_cacheTime = cacheTime; }
-    void SetRconPassword(const char *szRconPassword) { g_szRconPassword = szRconPassword; }
     void Init();
 };
 
