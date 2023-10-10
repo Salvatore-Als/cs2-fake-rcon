@@ -65,7 +65,7 @@ bool FakeRcon::Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxlen, bool
 	}
 	else
 	{
-		Debug("[FAKE RCON] Fake rcon is", g_szRconPassword);
+		Debug("[FAKE RCON] Fake rcon is %s", g_szRconPassword);
 	}
 
 	g_pCVar = icvar;
