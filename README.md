@@ -9,4 +9,5 @@ https://forums.alliedmods.net/showpost.php?p=2811082&postcount=15
 
 ## How to use it ?
 fake_rcon_password YOURPWD
+
 fake_rcon say hello
