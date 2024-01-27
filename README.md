@@ -1,3 +1,5 @@
+[Buy Me A Coffe ♥︎](https://www.buymeacoffee.com/kriax)
+
 ## Features
 
 Fake rcon adds the fake_rcon_password and fake_rcon command because valve has not integrated the orignel command into the game (or it is broken).
