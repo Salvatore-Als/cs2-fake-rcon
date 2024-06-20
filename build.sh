@@ -4,5 +4,5 @@ echo "export MMSOURCE112=/home/metamod/metamod-source" >> ~/.bashrc
 
 rm -R build
 mkdir build && cd build
-CC=clang CXX=clang++ python3 ../configure.py -s cs2 --targets=x86_64 --plugin-name=fake_rcon --plugin-alias=fake_rcon --enable-optimize
+CC=clang CXX=clang++ python3 ../configure.py -s cs2 --targets=x86_64 --plugin-name=fake_rcon --plugin-alias=fake_rcon --enable-optimize --hl2sdk-manifests hl2sdk-manifests
 ambuild

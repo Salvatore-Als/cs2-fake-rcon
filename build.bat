@@ -7,7 +7,7 @@ call %VCVARS% x86_x64
 if not exist build mkdir build
 cd build
 @echo on
-python ../configure.py --plugin-name=test --sdks cs2 --targets=x86_64 --plugin-name=fake_rcon --plugin-alias=fake_rcon
+python ../configure.py --plugin-name=test --sdks cs2 --targets=x86_64 --plugin-name=fake_rcon --plugin-alias=fake_rcon --hl2sdk-manifests hl2sdk-manifests
 
 ambuild
 exit

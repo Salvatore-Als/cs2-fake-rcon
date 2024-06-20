@@ -2,3 +2,5 @@ build/
 hl2sdk-cs2/
 .vscode/
 metamod-source/
+hl2sdk-manifests/
+protobuf/
