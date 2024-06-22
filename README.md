@@ -1,8 +1,8 @@
-[Buy Me A Coffe ♥︎](https://www.buymeacoffee.com/kriax)
+[Buy Me A Coffee ♥︎](https://www.buymeacoffee.com/kriax)
 
 ## Features
 
-Fake rcon adds the fake_rcon_password and fake_rcon command because valve has not integrated the orignel command into the game (or it is broken).
+Fake rcon adds the fake_rcon_password and fake_rcon command because valve has not integrated the original command into the game (or it is broken).
 
 ## How to configure it ?
 https://forums.alliedmods.net/showpost.php?p=2811082&postcount=15
