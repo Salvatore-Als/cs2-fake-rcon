@@ -3,6 +3,7 @@
 #include <string>
 #include "filemanager.h"
 #include "abstract.h"
+#include "tier0/icommandline.h"
 
 void Debug(const char *msg, ...)
 {
@@ -55,6 +56,7 @@ bool FakeRcon::Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxlen, bool
 	}
 	else
 	{
+                const char* pw = g_fileManager->GetRconPassword();
 		g_szRconPassword = strdup(g_fileManager->GetRconPassword());
 		Debug("[FAKE RCON] Fetching RCON from %s", CONFIG_FILE);
 	}
@@ -206,7 +208,7 @@ const char *FakeRcon::GetLicense()
 
 const char *FakeRcon::GetVersion()
 {
-	return "1.2.1";
+	return "1.2.2";
 }
 
 const char *FakeRcon::GetDate()
