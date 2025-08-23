@@ -9,7 +9,7 @@ Fakercon adds the fake_rcon_password and fake_rcon commands because Valve has no
 
 You can choose between Linux and Windows, and then unpack the package (`.tar.gz` or `.zip`).
 
-Then upload the **addons** to the path `game/csgo`, where the addons folder should be located.
+Then upload the **fake_rcon** to the path `game/csgo/addons`, where the addons folder should be located.
 
 ## How to configure it?
 https://forums.alliedmods.net/showpost.php?p=2811082&postcount=15
