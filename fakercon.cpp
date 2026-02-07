@@ -56,14 +56,16 @@ bool FakeRcon::Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxlen, bool
 	}
 	else
 	{
-                const char* pw = g_fileManager->GetRconPassword();
-		g_szRconPassword = strdup(g_fileManager->GetRconPassword());
+		const char *pw = g_fileManager->GetRconPassword();
+		g_szRconPassword = pw ? strdup(pw) : nullptr;
+
 		Debug("[FAKE RCON] Fetching RCON from %s", CONFIG_FILE);
 	}
 
 	if (!g_szRconPassword || strlen(g_szRconPassword) < 4)
 	{
-		Debug("[FAKE RCON], please check the lengh of the password in game/csgo/%s or -fakercon command line", CONFIG_FILE);
+		Debug("[FAKE RCON] Password is missing or too short (min 4 chars).");
+		Debug("[FAKE RCON] Set it in game/csgo/%s (Valve KeyValues format) or via the -fakercon launch parameter.", CONFIG_FILE);
 	}
 	else
 	{
@@ -79,6 +81,9 @@ bool FakeRcon::Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxlen, bool
 bool FakeRcon::Unload(char *error, size_t maxlen)
 {
 	SH_REMOVE_HOOK_MEMFUNC(ISource2GameClients, ClientFullyConnect, gameclients, this, &FakeRcon::Hook_ClientFullyConnect, false);
+
+	free(const_cast<char *>(g_szRconPassword));
+	g_szRconPassword = nullptr;
 
 	delete g_fileManager;
 
@@ -208,7 +213,7 @@ const char *FakeRcon::GetLicense()
 
 const char *FakeRcon::GetVersion()
 {
-	return "1.2.2";
+	return "1.2.8";
 }
 
 const char *FakeRcon::GetDate()
