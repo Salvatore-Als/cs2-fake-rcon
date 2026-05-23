@@ -105,7 +105,7 @@ void Command_FakeRconCacheClean(const CCommandContext &context, const CCommand &
 {
 	CPlayerSlot slot = context.GetPlayerSlot();
 
-	if (slot.Get() < 0)
+	if (!slot.IsValid())
 	{
 		return;
 	}
@@ -114,8 +114,8 @@ void Command_FakeRconCacheClean(const CCommandContext &context, const CCommand &
 
 	if (!pData->logged)
 	{
-		const char *networkId = engine->GetPlayerNetworkIDString(slot.Get());
-		if (!g_fileManager->IsSteamIdCached(networkId))
+		const char *networkId = engine->GetPlayerNetworkIDString(slot);
+		if (!networkId || !g_fileManager->IsSteamIdCached(networkId))
 		{
 			g_SMAPI->ClientConPrintf(slot, "First, enter the password with the fake_rcon_password command\n");
 			return;
@@ -133,8 +133,14 @@ void Command_FakeRcon(const CCommandContext &context, const CCommand &args)
 {
 	CPlayerSlot slot = context.GetPlayerSlot();
 
-	if (g_szRconPassword == nullptr || slot.Get() < 0)
+	if (g_szRconPassword == nullptr || !slot.IsValid())
 	{
+		return;
+	}
+
+	if (args.ArgC() < 2)
+	{
+		g_SMAPI->ClientConPrintf(slot, "Usage: fake_rcon <command>\n");
 		return;
 	}
 
@@ -142,8 +148,8 @@ void Command_FakeRcon(const CCommandContext &context, const CCommand &args)
 
 	if (!pData->logged)
 	{
-		const char *networkId = engine->GetPlayerNetworkIDString(slot.Get());
-		if (!g_fileManager->IsSteamIdCached(networkId))
+		const char *networkId = engine->GetPlayerNetworkIDString(slot);
+		if (!networkId || !g_fileManager->IsSteamIdCached(networkId))
 		{
 			g_SMAPI->ClientConPrintf(slot, "First, enter the password with the fake_rcon_password command\n");
 			return;
@@ -152,15 +158,12 @@ void Command_FakeRcon(const CCommandContext &context, const CCommand &args)
 		pData->logged = true;
 	}
 
-	char *commandString = const_cast<char *>(args.GetCommandString());
-	const char *firstSpace = strchr(commandString, ' ');
-
-	if (firstSpace == nullptr)
+	const char *command = args.ArgS();
+	if (!command || !*command)
 	{
 		return;
 	}
 
-	const char *command = firstSpace + 1;
 	engine->ServerCommand(command);
 }
 
@@ -169,8 +172,14 @@ void Command_FakeRconPassword(const CCommandContext &context, const CCommand &ar
 {
 	CPlayerSlot slot = context.GetPlayerSlot();
 
-	if (g_szRconPassword == nullptr || slot.Get() < 0)
+	if (g_szRconPassword == nullptr || !slot.IsValid())
 	{
+		return;
+	}
+
+	if (args.ArgC() < 2)
+	{
+		g_SMAPI->ClientConPrintf(slot, "Usage: fake_rcon_password <password>\n");
 		return;
 	}
 
@@ -192,8 +201,11 @@ void Command_FakeRconPassword(const CCommandContext &context, const CCommand &ar
 	g_SMAPI->ClientConPrintf(slot, "You can now use the fake_rcon command\n");
 	pData->logged = true;
 
-	const char *networkId = engine->GetPlayerNetworkIDString(slot.Get());
-	g_fileManager->AddSteamIdToCache(networkId);
+	const char *networkId = engine->GetPlayerNetworkIDString(slot);
+	if (networkId)
+	{
+		g_fileManager->AddSteamIdToCache(networkId);
+	}
 }
 
 bool FakeRcon::Pause(char *error, size_t maxlen)
@@ -213,7 +225,7 @@ const char *FakeRcon::GetLicense()
 
 const char *FakeRcon::GetVersion()
 {
-	return "1.2.8";
+	return "1.2.9";
 }
 
 const char *FakeRcon::GetDate()

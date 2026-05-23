@@ -44,11 +44,10 @@ void CFileManager::Init()
         Debug("[FAKE RCON] Config file not found, creating default: %s", CONFIG_FILE);
 
         KeyValues *defaultKV = new KeyValues("Config");
+        KeyValues::AutoDelete autoDeleteDefault(defaultKV);
         defaultKV->SetInt("caching_time", 120);
         defaultKV->SetString("rcon_password", "changeme");
         defaultKV->SaveToFile(g_fileSystem, CONFIG_FILE, "MOD");
-        delete defaultKV;  // ✅ fixed
-        delete defaultKV;
     }
 
     // Load the config
@@ -80,8 +79,8 @@ void CFileManager::Init()
     if (!g_fileSystem->FileExists(CACHE_FILE, "MOD"))
     {
         KeyValues *emptyCache = new KeyValues("Config");
+        KeyValues::AutoDelete autoDeleteCache(emptyCache);
         emptyCache->SaveToFile(g_fileSystem, CACHE_FILE, "MOD");
-        delete emptyCache;
         Debug("[FAKE RCON] Created empty cache file: %s", CACHE_FILE);
     }
 }
@@ -98,6 +97,9 @@ void CFileManager::CleanCache()
 
 bool CFileManager::IsSteamIdCached(const char *steamid)
 {
+    if (!steamid || !*steamid)
+        return false;
+
     KeyValues *kv = new KeyValues("Config");
     KeyValues::AutoDelete autoDelete(kv);
 
@@ -116,6 +118,9 @@ bool CFileManager::IsSteamIdCached(const char *steamid)
 
 void CFileManager::AddSteamIdToCache(const char *steamid)
 {
+    if (!steamid || !*steamid)
+        return;
+
     KeyValues *kv = new KeyValues("Config");
     KeyValues::AutoDelete autoDelete(kv);
 
